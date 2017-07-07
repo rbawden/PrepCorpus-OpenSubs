@@ -7,8 +7,5 @@ Uses the OpenSubtitles parallel corpus:
 > Pierre Lison and Jörg Tiedemann, 2016, OpenSubtitles2016: Extracting Large Parallel Corpora from Movie and TV Subtitles. In Proceedings of the 10th International Conference on Language Resources and Evaluation (LREC 2016)
 
 
-Change the paths and parameters in the prepare_data.sh file
-
-Then
-
-``bash prepare_data.sh``
+1. Change the paths and parameters in the prepare_data.sh file
+2. Then ``bash prepare_data.sh``
