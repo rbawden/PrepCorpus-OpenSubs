@@ -3,29 +3,14 @@
 # Contact: rachel.bawden@limsi.fr
 # Last modif: 13/06/2017
 
+# one argument is the variable file entitled var
 
-#---------------------------------------------------------------------
-export mypython2=/Users/rbawden/Documents/pyenvs/py2.7/bin/python
-export mypython3=/Users/rbawden/Documents/pyenvs/py3.5/bin/python
-
-export SRC="fr"
-export TRG="en"
-
-# alignmentfile=/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/alignments.fr-en.xml.gz
-export datadir=/Volumes/Mammoth/data/
-export opensubs_dir=$datadir/OpenSubtitles2016 #"/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/raw"
-export working_dir=/Users/rbawden/phd/OpenSubs2016_notes/data
-export SCRIPTS=/Users/rbawden/phd/OpenSubs2016_notes/scripts/prep-corpus/scripts-imsdb
-export champollion=/Users/rbawden/Documents/tools/champollion-1.2/
-export CTK=$champollion
+vars=$1
+. vars
 
 
-# can ignore the generation of data if false (otherwise write true to regenerate)
-redoImsdb=false
-
+CTK=$champollion 
 LC_ALL=C
-
-<<COMMENT
 
 # Make directories if necessary
 for folder in opensubs_all opensubs_minusimsdb opensubs_train \
@@ -115,8 +100,6 @@ echo ">> Separating out last 5000 films from OpenSubs2016-IMSDB to make dev set 
 lastline=`tail -5000 $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.filminfo | head -1 | cut -f 2 `
 firstfilms=`tail -5000 $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.filminfo | head -1 | cut -f 1 `
 
-
-
 # get dev corpus
 cat $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.$SRC \
  	| sed -n "${lastline},50000000000p" >  $working_dir/opensubs_dev/opensubs.dev.$SRC-$TRG.$SRC
@@ -146,7 +129,6 @@ cat $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.list  \
 	| sed -n "1,${firstfilms}p" >  $working_dir/opensubs_train/opensubs.train.$SRC-$TRG.list
 
 exit
-COMMENT
 #---------------------------------------------------------------------
 # 5. Now try to align opensubs and imsdb scripts using Champollion
 #---------------------------------------------------------------------
