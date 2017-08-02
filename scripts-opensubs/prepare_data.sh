@@ -31,13 +31,13 @@ for folder in datadir $working_dir/opensubs_all; do
 done
 
 # Download untokenised files (righthand side of matrix) for each language from Opus
-if [ ! -d $opensubs_dir/raw/$SRC -a ! -f $opensubs_dir/$SRC.raw.tar.gz ] || [ reload == "true" ]; then
+if ([ ! -d $opensubs_dir/raw/$SRC ] && [ ! -f $opensubs_dir/$SRC.raw.tar.gz ]) || [ reload == "true" ]; then
 	wget http://opus.lingfil.uu.se/download.php?f=OpenSubtitles2016/$SRC.raw.tar.gz \
 		-O $data_dir/$SRC.raw.tar.gz
 	tar -xzvf $data_dir/$SRC.raw.tar.gz
 fi
 
-if [ ! -d $opensubs_dir/raw/$TRG -a ! -f $opensubs_dir/$TRG.raw.tar.gz ] || [ reload == "true" ]; then
+if ([ ! -d $opensubs_dir/raw/$TRG ] && [ ! -f $opensubs_dir/$TRG.raw.tar.gz ]) || [ reload == "true" ]; then
 	echo wget http://opus.lingfil.uu.se/download.php?f=OpenSubtitles2016/$TRG.raw.tar.gz \
 		-O $datadir/$TRG.raw.tar.gz
 	echo tar -xzvf $data_dir/$TRG.raw.tar.gz 
@@ -48,24 +48,27 @@ align_src=`[ "$SRC" \< "$TRG" ] && echo "$SRC" || echo "$TRG"`
 align_trg=`[ "$SRC" \< "$TRG" ] && echo "$TRG" || echo "$SRC"`
 
 # Download alignment file for each language (ces)
-if [ ! -f $opensubs_dir/alignments.$align_src-$align_trg.xml.gz -a \
-	   -f $opensubs_dir/alignments.$SRC-$TRG.xml.gz ] || [ reload == "true" ]; then
+if ([ ! -f $opensubs_dir/alignments.$align_src-$align_trg.xml.gz ] && \
+	   [ ! -f $opensubs_dir/alignments.$SRC-$TRG.xml.gz ]) || [ reload == "true" ]; then
 	wget http://opus.lingfil.uu.se/download.php?f=OpenSubtitles2016/xml/$align_src-$align_trg.xml.gz \
 		-O $opensubs_dir/alignments.$SRC-$TRG.xml.gz	
 fi
 
 # Get the opensubs parallel corpus
 echo ">> Preparing all opensubs2016 data (opensubs_all/)"
-if [ ! -f $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo ] || [ reload == "true" ]; then
+if ([ ! -f $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo ] && \
+		[ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ]) || [ reload == "true" ]; then
+	echo "Getting parallel corpus"
 	$mypython3 $SCRIPTS/create-open-subs-corpus.py \
 			   -r $opensubs_dir/raw \
 			   -a $alignmentfile -o $working_dir/opensubs_all/raw.$SRC-$TRG \
 			   -s $TRG -t $SRC \
 			   > $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo
 fi
-	
+
 # Preclean (fix encodings and whitespace characters such as \r)
 if  [ ! -f $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Precleaning $SRC"
 	if  [[ "$SRC" == "en" ||  "$SRC" == "fr" ]]; then
 		cat $working_dir/opensubs_all/raw.$SRC-$TRG.$SRC | \
 			perl $SCRIPTS/fix_mixed_encodings.pl \
@@ -77,6 +80,7 @@ if  [ ! -f $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC ] || [ reload == 
 	fi
 fi
 if  [ ! -f $working_dir/opensubs_all/precleaned.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+	echo "Precleaning $TRG"
 	if  [[ "$TRG" == "en" ||  "$TRG" == "fr" ]]; then
 		cat $working_dir/opensubs_all/raw.$SRC-$TRG.$TRG | \
 			perl $SCRIPTS/fix_mixed_encodings.pl \
@@ -90,39 +94,42 @@ fi
 
 # Birecode to eliminate all extra problems
 if  [ ! -f $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Birecoding $SRC"
 	cat $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC | recode -f u8..unicode \
 		| recode unicode..u8 > $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC
 fi
 if  [ ! -f $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+	echo "Birecoding $TRG"
 	cat $working_dir/opensubs_all/precleaned.$SRC-$TRG.$TRG | recode -f u8..unicode \
 		| recode unicode..u8 > $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG
 fi
 	
 # Subtitle-specific cleaning (removed unwanted characters and sentences and correct some OCR problems)
 if  [ ! -f $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Cleaning $SRC"
 	$mypython3 $SCRIPTS/clean-up-subs.py \
 			   $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC $SRC \
 			   > $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC
 fi
 if  [ ! -f $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+	echo "Cleaning $TRG"
 	$mypython3 $SCRIPTS/clean-up-subs.py \
 			   $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG $TRG \
 			   > $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG
 fi
 
 # Remove blank lines and 
-if  [ ! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC -a \
-		! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+if  ([ ! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC ] && \
+		[! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG ]) || \
+		[ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ] || [ reload == "true" ]; then
+	echo "Removing blank lines"
 	$mypython3 $SCRIPTS/filter-empty-lines.py \
 			   $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC \
 			   $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG \
 			   $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC \
 			   $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG \
 			   > $working_dir/tmpfilmlines
-fi
-
-# Recalculate film info
-if  [ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ] || [ reload == "true" ]; then
+	echo "Recalculating film info"
 	$mypython3 $SCRIPTS/recalculate-film-lines.py \
 			   $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo \
 			   $working_dir/tmpfilmlines \
@@ -130,8 +137,20 @@ if  [ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ] || [ reload =
 	rm $working_dir/tmpfilmlines
 fi
 
+TAB=$'\t' 
+# Add line numbers to "noblank files" to keep a track of them later
+if [ ! -f $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Numbering noblank $SRC file"
+	sed = $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | sed -e "N;s/\n/${TAB}/" > $$;
+	cat $$ > $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$SRC; 
+	rm $$
+fi
+
+exit
+
 # Zip pre-processed files for storage
 for lang in $SRC $TRG; do
+	echo "Zipping files $lang"
 	for file in raw precleaned birecoded cleaned; do
 		if [ -f $working_dir/opensubs_all/$typefile.$SRC-$TRG.$lang ]; then
 			gzip $working_dir/opensubs_all/$typefile.$SRC-$TRG.$lang
@@ -139,18 +158,6 @@ for lang in $SRC $TRG; do
 	done
 done
 
-# Add line numbers to "noblank files" to keep a track of them later
-if [ ! -f $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
-   sed = $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | sed -e 'N;s/\n/\t/' > $$;
-   cat $$ > $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$SRC; 
-   rm $$
-fi
-
-if [ ! -f $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
-	sed = $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG |  sed -e 'N;s/\n/\t/' > $$;
-	cat $$ > $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$TRG; 
-	rm $$
-fi
 
 
 
