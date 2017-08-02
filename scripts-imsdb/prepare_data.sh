@@ -22,19 +22,19 @@ done
 # Get imsdb data and character lists
 if [ "$redoImsdb" = true ]; then
 	# get imdb numbers of available imsdb films
-	python $SCRIPTS/crawl_imsdb.py \
+	$python2 $SCRIPTS/crawl_imsdb.py \
 			   -n $working_dir/imsdb/all.nums-titles.json \
 			   $working_dir/imsdb/scripts/
 	
 	# get characters (w/ actor information) for all imsdb films
 	if [ ! -f $working_dir/imsdb/all.characters.json ]; then
-		python $SCRIPTS/crawl_imsdb.py \
+		$python2 $SCRIPTS/crawl_imsdb.py \
 			   -m $working_dir/imsdb/all.nums-titles.json \
 			   $working_dir/imsdb/all.characters.json
 	fi
 	
 	# extract scripts and structure them
-	python $SCRIPTS/crawl_imsdb.py \
+	$python2 $SCRIPTS/crawl_imsdb.py \
 			   -s $working_dir/imsdb/all.nums-titles.json \
 			   $working_dir/imsdb/scripts/ \
 			   $working_dir/imsdb/structured_scripts/ \
@@ -49,13 +49,13 @@ fi
 # Remove imsdb films from Opensubs train set
 # Get the line numbers of IMSDB films
 echo ">> Getting line numbers of imsdb films in OpenSubs"
-python $SCRIPTS/get_imsdb_linenumbers.py \
+$python2 $SCRIPTS/get_imsdb_linenumbers.py \
 	   $working_dir/imsdb/all.nums-titles.json \
  	   `wc -l $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | perl -pe 's/^\s*//g' | cut -d" " -f 1` \
  	   -f  $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo \
 	   > $working_dir/imsdb/opensubs.imsdb.$SRC-$TRG.list
 
-python $SCRIPTS/get_imsdb_linenumbers.py \
+$python2 $SCRIPTS/get_imsdb_linenumbers.py \
 	   $working_dir/imsdb/all.nums-titles.json \
  	   `wc -l $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | perl -pe 's/^\s*//g' | cut -d" " -f 1` \
  	   -f  $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo --printfilminfo \
@@ -63,13 +63,13 @@ python $SCRIPTS/get_imsdb_linenumbers.py \
 
 # Get the line numbers of remaining OpenSubs films
 echo ">> Getting line numbers of Opensubs minus imsdb films in OpenSubs"
-python $SCRIPTS/get_imsdb_linenumbers.py \
+$python2 $SCRIPTS/get_imsdb_linenumbers.py \
 	   $working_dir/imsdb/all.nums-titles.json \
  	   `wc -l $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | perl -pe 's/^\s*//g' | cut -d" " -f 1` \
  	   -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo -v \
  	   > $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.list
 
-python $SCRIPTS/get_imsdb_linenumbers.py \
+$python2 $SCRIPTS/get_imsdb_linenumbers.py \
 	   $working_dir/imsdb/all.nums-titles.json \
  	   `wc -l $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | perl -pe 's/^\s*//g' | cut -d" " -f 1` \
  	   -f  $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo --printfilminfo -v \
