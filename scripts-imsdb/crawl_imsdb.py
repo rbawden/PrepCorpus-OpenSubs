@@ -13,7 +13,7 @@ import multiprocessing as mp
 import httplib
 from structure_scripts import *
 
-from scriptsconstants import *
+#from scriptsconstants import *
 
 #-------------------------------------------------------------------
 # get all character/actor information for a film

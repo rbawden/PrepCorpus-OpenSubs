@@ -96,8 +96,8 @@ def read_name_list(fname):
             names.append(line.upper().strip())
     return names
 
-names = read_name_list("/Users/rbawden/Documents/tq_in_mt/resources/gals.list")
-names.extend(read_name_list("/Users/rbawden/Documents/tq_in_mt/resources/guys.list"))
+names = read_name_list("gals.list")
+names.extend(read_name_list("guys.list"))
 
 def extract_script(fname, character_actors, speaker_indent=["xxx"], scene_indent=["xxx"], speech_indent=["xxx"], colon=False):
     

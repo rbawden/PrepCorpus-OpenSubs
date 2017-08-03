@@ -1,4 +1,4 @@
-mypython2=/Users/rbawden/Documents/pyenvs/py2.7/bin/python
+python2=/mnt/baldur0/rbawden/pyenvs/py2/bin/python
 mypython3=/Users/rbawden/Documents/pyenvs/py3.5/bin/python
 
 SRC="fr"
@@ -6,11 +6,13 @@ TRG="en"
 
 # alignmentfile=/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/alignments.fr-en.xml.gz                                                           
 datadir=/Volumes/Mammoth/data/
-opensubs_dir=$datadir/OpenSubtitles2016 #"/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/raw"                                                    
-working_dir=/Users/rbawden/phd/OpenSubs2016_notes/data
-SCRIPTS=/Users/rbawden/phd/OpenSubs2016_notes/scripts/corpus
-champollion=/Users/rbawden/Documents/tools/champollion-1.2/
+opensubs_dir=$datadir/OpenSubtitles2016 #"/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/raw"
+
+home=/mnt/baldur0/rbawden/
+working_dir=$home/data/OpenSubs
+SCRIPTS=$home/scripts/PrepCorpus-OpenSubs/scripts-imsdb
+champollion=$home/tools/champollion-1.2/
 
 
-# can ignore the generation of data if false (otherwise write true to regenerate)                                                                          
+# can ignore the generation of data if false (otherwise write true to regenerate)                                                                         
 redoImsdb=false
