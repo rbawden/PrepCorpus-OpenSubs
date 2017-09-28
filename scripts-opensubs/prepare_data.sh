@@ -9,7 +9,7 @@
 mypython3=/Users/rbawden/Documents/pyenvs/py3.5/bin/python
 
 # scripts and tools paths
-SCRIPTS=/Users/rbawden/phd/OpenSubs2016_notes/scripts/OpenSubs-preparation
+SCRIPTS=/Users/rbawden/phd/OpenSubs2016_notes/scripts/prep-corpus/scripts-opensubs
 
 # source and target languages
 SRC="fr"
@@ -22,70 +22,53 @@ opensubs_dir=$datadir/OpenSubtitles2016
 # where processed parallel data will be stored
 working_dir=/Users/rbawden/phd/OpenSubs2016_notes/data
 
-# can ignore the generation of data if false (otherwise write true to regenerate)
-redoOpenSubs=false
-
+reload=false # change to true to redo all steps
 
 #---------------------------------------------------------------------
-# 0. make directories if necessary
-#---------------------------------------------------------------------
-[[ -d $datadir ]] || mkdir $datadir
-[ -d $working_dir/opensubs_all ] || mkdir $working_dir/opensubs_all
-[ -d $working_dir/opensubs_minusimsdb ] || mkdir $working_dir/opensubs_minusimsdb
-[ -d $working_dir/opensubs_train ] || mkdir $working_dir/opensubs_train
-[ -d $working_dir/opensubs_dev ] || mkdir $working_dir/opensubs_dev
-[ -d $working_dir/imsdb ] || mkdir $working_dir/imsdb
-[ -d $working_dir/scripts ] || mkdir $working_dir/scripts
-[ -d $working_dir/structured_scripts ] || mkdir $working_dir/structured_scripts
-[ -d $working_dir/alignments ] || mkdir $working_dir/alignments
+# Make directories if necessary
+for folder in datadir $working_dir/opensubs_all; do
+	[ -d $folder ] || mkdir $folder
+done
 
-
-#---------------------------------------------------------------------
-# 1. get OpenSubtitles2016 parallel corpus w/ film information
-#---------------------------------------------------------------------
-
-# From Opus:
-# Download untokenised corpus files (righthand side of matrix) for each language
-# Download alignment file for each language (ces)
-if [ ! -d $opensubs_dir/raw/$SRC -a ! -f $opensubs_dir/$SRC.raw.tar.gz ]; then
+# Download untokenised files (righthand side of matrix) for each language from Opus
+if ([ ! -d $opensubs_dir/raw/$SRC ] && [ ! -f $opensubs_dir/$SRC.raw.tar.gz ]) || [ reload == "true" ]; then
 	wget http://opus.lingfil.uu.se/download.php?f=OpenSubtitles2016/$SRC.raw.tar.gz \
-		--O $data_dir/$SRC.raw.tar.gz
+		-O $data_dir/$SRC.raw.tar.gz
 	tar -xzvf $data_dir/$SRC.raw.tar.gz
 fi
-if [ ! -d $opensubs_dir/raw/$TRG -a ! -f $opensubs_dir/$TRG.raw.tar.gz ]; then
+
+if ([ ! -d $opensubs_dir/raw/$TRG ] && [ ! -f $opensubs_dir/$TRG.raw.tar.gz ]) || [ reload == "true" ]; then
 	echo wget http://opus.lingfil.uu.se/download.php?f=OpenSubtitles2016/$TRG.raw.tar.gz \
-		--O $datadir/$TRG.raw.tar.gz
+		-O $datadir/$TRG.raw.tar.gz
 	echo tar -xzvf $data_dir/$TRG.raw.tar.gz 
 fi
-# which one alphabetically first
+
+# Determine which language is alphabetically first (for name of alignment file)
 align_src=`[ "$SRC" \< "$TRG" ] && echo "$SRC" || echo "$TRG"`
 align_trg=`[ "$SRC" \< "$TRG" ] && echo "$TRG" || echo "$SRC"`
 
-
-if [ ! -f $opensubs_dir/alignments.$align_src-$align_trg.xml.gz -a  -f $opensubs_dir/alignments.$SRC-$TRG.xml.gz ]; then
+# Download alignment file for each language (ces)
+if ([ ! -f $opensubs_dir/alignments.$align_src-$align_trg.xml.gz ] && \
+	   [ ! -f $opensubs_dir/alignments.$SRC-$TRG.xml.gz ]) || [ reload == "true" ]; then
 	wget http://opus.lingfil.uu.se/download.php?f=OpenSubtitles2016/xml/$align_src-$align_trg.xml.gz \
-		--O $opensubs_dir/alignments.$SRC-$TRG.xml.gz
-	
+		-O $opensubs_dir/alignments.$SRC-$TRG.xml.gz	
 fi
 
-#---------------------------------------------------------------------
-# get all opensubs parallel corpus and preprocess (several cleaning steps)
-
-if [ "$redoOpenSubs" = true ]; then
-
-	echo ">> Preparing all opensubs2016 data (opensubs_all/)"
-		
-	# Create the parallel version
+# Get the opensubs parallel corpus
+echo ">> Preparing all opensubs2016 data (opensubs_all/)"
+if ([ ! -f $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo ] && \
+		[ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ]) || [ reload == "true" ]; then
+	echo "Getting parallel corpus"
 	$mypython3 $SCRIPTS/create-open-subs-corpus.py \
 			   -r $opensubs_dir/raw \
 			   -a $alignmentfile -o $working_dir/opensubs_all/raw.$SRC-$TRG \
 			   -s $TRG -t $SRC \
 			   > $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo
+fi
 
-	#---------------------------------------------------------------------
-	# precleaning (fix encodings and whitespace characters such as \r) and
-	# birecode to eliminate all extra problems
-	
+# Preclean (fix encodings and whitespace characters such as \r)
+if  [ ! -f $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Precleaning $SRC"
 	if  [[ "$SRC" == "en" ||  "$SRC" == "fr" ]]; then
 		cat $working_dir/opensubs_all/raw.$SRC-$TRG.$SRC | \
 			perl $SCRIPTS/fix_mixed_encodings.pl \
@@ -95,6 +78,9 @@ if [ "$redoOpenSubs" = true ]; then
 			perl -pe 's/\r//g' | \
 			gzip > $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC
 	fi
+fi
+if  [ ! -f $working_dir/opensubs_all/precleaned.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+	echo "Precleaning $TRG"
 	if  [[ "$TRG" == "en" ||  "$TRG" == "fr" ]]; then
 		cat $working_dir/opensubs_all/raw.$SRC-$TRG.$TRG | \
 			perl $SCRIPTS/fix_mixed_encodings.pl \
@@ -104,62 +90,74 @@ if [ "$redoOpenSubs" = true ]; then
 			perl -pe 's/\r//g' | \
 			gzip > $working_dir/opensubs_all/precleaned.$SRC-$TRG.$TRG
 	fi
+fi
 
-
+# Birecode to eliminate all extra problems
+if  [ ! -f $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Birecoding $SRC"
 	cat $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC | recode -f u8..unicode \
 		| recode unicode..u8 > $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC
+fi
+if  [ ! -f $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+	echo "Birecoding $TRG"
 	cat $working_dir/opensubs_all/precleaned.$SRC-$TRG.$TRG | recode -f u8..unicode \
 		| recode unicode..u8 > $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG
-
-
-	#---------------------------------------------------------------------
-	# subtitle-specific cleaning (removed unwanted characters and sentences
-	# and correct some ocr problems)
+fi
 	
+# Subtitle-specific cleaning (removed unwanted characters and sentences and correct some OCR problems)
+if  [ ! -f $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Cleaning $SRC"
 	$mypython3 $SCRIPTS/clean-up-subs.py \
 			   $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC $SRC \
 			   > $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC
+fi
+if  [ ! -f $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG ] || [ reload == "true" ]; then
+	echo "Cleaning $TRG"
 	$mypython3 $SCRIPTS/clean-up-subs.py \
 			   $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG $TRG \
 			   > $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG
+fi
 
-	
-	#---------------------------------------------------------------------
-	# remove blank lines and recalculate film info
+# Remove blank lines and 
+if  ([ ! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC ] && \
+		[! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG ]) || \
+		[ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ] || [ reload == "true" ]; then
+	echo "Removing blank lines"
 	$mypython3 $SCRIPTS/filter-empty-lines.py \
 			   $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC \
 			   $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG \
 			   $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC \
 			   $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG \
 			   > $working_dir/tmpfilmlines
-
-
+	echo "Recalculating film info"
 	$mypython3 $SCRIPTS/recalculate-film-lines.py \
 			   $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo \
 			   $working_dir/tmpfilmlines \
 	 		   > $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo
-	 rm $working_dir/tmpfilmlines
-	 rm $working_dir/opensubs_all/raw.$SRC-$TRG.filminfo
-	
-	 # zip pre-processed files for storage
-	 gzip $working_dir/opensubs_all/cleaned.$SRC-$TRG.$SRC
-	 gzip $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG
-	 gzip $working_dir/opensubs_all/birecoded.$SRC-$TRG.$SRC
-	 gzip $working_dir/opensubs_all/birecoded.$SRC-$TRG.$TRG
-	 gzip $working_dir/opensubs_all/precleaned.$SRC-$TRG.$SRC
-	 gzip $working_dir/opensubs_all/precleaned.$SRC-$TRG.$TRG
-	 gzip $working_dir/opensubs_all/raw.$SRC-$TRG.$SRC
-	 gzip $working_dir/opensubs_all/raw.$SRC-$TRG.$TRG
-
+	rm $working_dir/tmpfilmlines
 fi
-	 # add line numbers to "noblank files"
-	 sed  = $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | sed -e 'N;s/\n/\t/' > $$;
-	 cat $$ > $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC; 
-	 rm $$
-	 
-	 sed  = $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG |  sed -e 'N;s/\n/\t/' > $$;
-	 cat $$ > $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG; 
-	 rm $$
+
+TAB=$'\t' 
+# Add line numbers to "noblank files" to keep a track of them later
+if [ ! -f $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$SRC ] || [ reload == "true" ]; then
+	echo "Numbering noblank $SRC file"
+	sed = $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC | sed -e "N;s/\n/${TAB}/" > $$;
+	cat $$ > $working_dir/opensubs_all/noblank.numbered.$SRC-$TRG.$SRC; 
+	rm $$
+fi
+
+exit
+
+# Zip pre-processed files for storage
+for lang in $SRC $TRG; do
+	echo "Zipping files $lang"
+	for file in raw precleaned birecoded cleaned; do
+		if [ -f $working_dir/opensubs_all/$typefile.$SRC-$TRG.$lang ]; then
+			gzip $working_dir/opensubs_all/$typefile.$SRC-$TRG.$lang
+		fi
+	done
+done
+
 
 
 

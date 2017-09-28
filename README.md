@@ -8,7 +8,14 @@ Uses the OpenSubtitles parallel corpus:
 
 To prepare OpenSubtitles2016 data:
 1. cd `script-opensubs`
-1. Change the paths and parameters in the prepare_data.sh file
-2. Then ``bash prepare_data.sh``
+2. Change the paths and parameters in the prepare_data.sh file
+3. Then ``bash prepare_data.sh``
+
+
+To prepare IMSDB data:
+1. cd `scripts-imsdb`
+2. Change the paths and parameters in the prepare_data.sh file
+3. Then ``bash prepare_data.sh``
+
 
 

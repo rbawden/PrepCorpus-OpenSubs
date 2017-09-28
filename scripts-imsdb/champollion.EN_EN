@@ -1,0 +1,46 @@
+#!/bin/sh
+#
+# Purpose: Wrapper script to align English and English
+#          parallel text.
+# Usage: champollion.EC <english sentence file> <chinese sentence file> <alignment file>
+# Input: English text file, one sentence per line, encoded in ASCII
+#        English text file, one sentence per line, encoded in ASCII
+# Output: alignment file, alignment are in the format of:
+#         e_st_ids <=> c_st_ids
+#         Each e_st_ids or c_st_ids can contain up to four sentence ids
+#         delimited by comas, it also can be "omitted" indicating no
+#         mapping has been found.
+#
+
+# print usage if necessary
+if [ $# -ne 5 ]; then
+    echo "Usage: $0 CTK <english sentence file> <second english sentence file> <alignment file> <dict file> "
+    exit 1
+fi
+
+CTK=$1
+
+en_axis=/tmp/`basename $2`.en.axis
+en_axis2=/tmp/`basename $3`.en.axis
+
+
+# Tokenise English
+echo ">>> Tokenizing English ... "
+$CTK/bin/axis.EN/axis.EN "$2" > "$en_axis"
+if [ $? -ne 0 ]; then
+	exit 2
+fi
+
+# Tokenise English
+echo ">>> Tokenizing 2nd English ... "
+$CTK/bin/axis.EN/axis.EN "$3" > "$en_axis2"
+if [ $? -ne 0 ]; then
+	exit 3
+fi
+
+# Align sentences
+echo ">>> Aligning Sentences ... "
+$CTK/bin/champollion -d "$5" -s $CTK/lib/E.stoplist -c 0.634 "$en_axis" "$en_axis2" "$4" 
+
+# Remove temporary files
+rm "$en_axis" "$en_axis2"
