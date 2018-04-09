@@ -49,7 +49,6 @@ if [ ! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC ] || [ ! -f $working_
 fi
 
 
-<<COMMENT
 # Remove imsdb films from Opensubs train set
 # Get the line numbers of IMSDB films
 echo ">> Getting line numbers of imsdb films in OpenSubs"
@@ -132,7 +131,10 @@ cat $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.filminfo \
 cat $working_dir/opensubs_minusimsdb/opensubs.minus-imsdb.$SRC-$TRG.list  \
 	| sed -n "1,${firstfilms}p" >  $working_dir/opensubs_train/opensubs.train.$SRC-$TRG.list
 
-COMMENT
+#---------------------------------------------------------------------
+# 4. Prepare information per line for imsdb corpus
+#---------------------------------------------------------------------
+
 
 #---------------------------------------------------------------------
 # 5. Now try to align opensubs and imsdb scripts using Champollion

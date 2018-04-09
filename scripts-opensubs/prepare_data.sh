@@ -6,23 +6,23 @@
 
 #---------------------------------------------------------------------
 # paths to your python distributions (python 3)
-mypython3=/Users/rbawden/Documents/pyenvs/py3.5/bin/python
+mypython3=/path/to/python3
 
-# scripts and tools paths
-SCRIPTS=/Users/rbawden/phd/OpenSubs2016_notes/scripts/prep-corpus/scripts-opensubs
+# scripts and tools paths (path to scripts-opensubs/)
+SCRIPTS=./
 
 # source and target languages
 SRC="fr"
 TRG="en"
 
 # where raw OpenSubtitles2016 data will be stored
-datadir=/Volumes/Mammoth/data/
+datadir=/path/to/data/
 opensubs_dir=$datadir/OpenSubtitles2016 
 
 # where processed parallel data will be stored
-working_dir=/Users/rbawden/phd/OpenSubs2016_notes/data
+working_dir=/path/to/processed/data
 
-reload=false # change to true to redo all steps
+reload=false # change to true to redo all steps (otherwise will not repeat steps already done)
 
 #---------------------------------------------------------------------
 # Make directories if necessary
