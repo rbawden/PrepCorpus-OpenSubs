@@ -6,7 +6,7 @@ import requests
 if sys.version_info >= (3,0): import urllib.request as urllib
 else: import urllib2 as urllib
 import mechanize
-from imdb import IMDb
+#from imdb import IMDb
 import json
 from joblib import Parallel, delayed
 import multiprocessing as mp
@@ -34,13 +34,14 @@ def get_film_actors(imdb_num, loaded_people):
         if actor.find("td", {"class": "character"}):
             actors.append(actor)
         
-    # reload then if fewer than 10 characters
-    if loaded_people and len(loaded_people)>10 and len(actors)!=len(loaded_people):
+    # reload 
+    if loaded_people and len(actors)==len(loaded_people):
         return loaded_people
 
     # start getting character and actor names (+ gender, + date of birth)
     people = []
-    for actor in actors:
+    print(len(actors))
+    for a, actor in enumerate(actors):
 
         name, character, actornumber, characternumber, gender, dates = ("NA",)*6
         for link in actor.findAll("a"):
@@ -56,11 +57,12 @@ def get_film_actors(imdb_num, loaded_people):
             elif charname:
                 characternumber = charname.group(1)
                 character = re.sub("\s+", " ", link.text.strip().replace("\n", ""))
-                
+        #dump_json(people, 'out-test.json')        
         # get character name even if could'nt find it in imdb        
         if character == "NA":
             character = re.sub("\s+", " ", actor.find("td", {"class": "character"}).find("div").text).strip()
-            
+        print(len(people))
+        
         people.append( (name.strip(), actornumber.strip(), character.strip(), characternumber.strip(), gender, dates) )
         
     return people
@@ -101,7 +103,7 @@ def get_web_page(address):
         user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
         headers = { 'User-Agent' : user_agent }
         request = urllib.Request(address, None, headers)
-        response = urllib.urlopen(request, timeout=15)
+        response = urllib.urlopen(request, timeout=30)
         try:
             return response.read()
         finally:
@@ -534,7 +536,8 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     imdb_url = "http://www.imsdb.com/all%20scripts"
-    ia = IMDb()
+    #ia = IMDb()
+    ia = None
 
     if args.num_imdb:
         imdb_info = get_film_ids(imdb_url, args.num_imdb[0], args.num_imdb[1])

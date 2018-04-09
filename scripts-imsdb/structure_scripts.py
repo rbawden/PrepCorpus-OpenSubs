@@ -517,3 +517,7 @@ def check_formatting(imdb_json_fname, characters_json_fname, htmldir, outdir):
 
 
 
+if __name__=="__main__":
+
+    
+    check_formatting(imdb_json_fname, characters_json_fname, htmldir, outdir)
