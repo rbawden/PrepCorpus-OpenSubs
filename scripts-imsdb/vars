@@ -1,15 +1,15 @@
-python2=/Users/rbawden/Documents/pyenvs/py2.7/bin/python
-mypython3=/Users/rbawden/Documents/pyenvs/py3.5/bin/python
+python2=/path/to/py2.7/bin/python
+mypython3=/path/to/py3.5/bin/python
 
 SRC="fr"
 TRG="en"
 
-# alignmentfile=/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/alignments.fr-en.xml.gz                                                           
-datadir=/Volumes/Mammoth/data/
-opensubs_dir=$datadir/OpenSubtitles2016 #"/Users/rbawden/Documents/data/parallel/OpenSubtitles2016/raw"                                                    
-working_dir=/Users/rbawden/phd/OpenSubs2016_notes/data
-SCRIPTS=/Users/rbawden/phd/OpenSubs2016_notes/scripts/corpus
-champollion=/Users/rbawden/Documents/tools/champollion-1.2/
+
+datadir=/path/to/data/
+opensubs_dir=$datadir/OpenSubtitles2016 
+working_dir=/path/to/processed/data
+SCRIPTS=/path/to/Prepcorpus-OpenSubs
+champollion=/path/to/tools/champollion-1.2/
 
 
 # can ignore the generation of data if false (otherwise write true to regenerate)                                                                          
