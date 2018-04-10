@@ -8,7 +8,7 @@ TRG="en"
 datadir=/path/to/data/
 opensubs_dir=$datadir/OpenSubtitles2016 
 working_dir=/path/to/processed/data
-SCRIPTS=/path/to/Prepcorpus-OpenSubs
+SCRIPTS=/path/to/scripts-imsdb
 champollion=/path/to/tools/champollion-1.2/
 
 
