@@ -118,7 +118,7 @@ if  [ ! -f $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG ] || [ reload == "tr
 			   > $working_dir/opensubs_all/cleaned.$SRC-$TRG.$TRG
 fi
 
-# Remove blank lines and 
+# Remove blank lines and recalculate the film line info
 if  ([ ! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$SRC ] && \
 		[! -f $working_dir/opensubs_all/noblank.$SRC-$TRG.$TRG ]) || \
 		[ ! -f $working_dir/opensubs_all/opensubs.$SRC-$TRG.filminfo ] || [ reload == "true" ]; then
